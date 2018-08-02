@@ -1,48 +1,62 @@
 <?php
 /**
- * @name SmartyView
- * @author Victor Rosu
- * @copyright Red Px. All rights reserved.
- * @link http://www.redpx.ro/
+ * @package SmartyView
+ * @link https://github.com/mrred85
+ * @copyright 2016 - present Victor Rosu. All rights reserved.
+ * @license Licensed under the MIT License.
  */
 
 namespace App\View;
 
 use Cake\Core\Configure;
 use Cake\Event\EventManager;
-use Cake\Network\Request;
-use Cake\Network\Response;
+use Cake\Http\Response;
+use Cake\Http\ServerRequest;
 use Cake\View\View;
-use Cake\Routing\Route;
 use LogicException;
 use Smarty;
 
-
 /**
- * Application View
  * Your application’s default view class for Smarty
- * @important All templates files must have ".tpl" extension
- * 
- * Smarty (configure values)
- * - error_reporing
- * - force_compile
- * - caching
- * - compile_check
+ * IMPORTANT: All templates files must have ".tpl" extension
+ *
+ * ### Smarty (configure values)
+ * - error_reporting
+ * - force_compile: bool
+ * - caching: bool
+ * - caching_time: int (seconds)
+ * - compile_check: bool
+ *
+ * @package App\View
+ * @use Smarty
  */
 class SmartyView extends View
 {
+    /**
+     * @var null|Smarty
+     */
     protected $Smarty = null;
 
+    /**
+     * Constructor
+     *
+     * @param \Cake\Http\ServerRequest|null $request Request instance.
+     * @param \Cake\Http\Response|null $response Response instance.
+     * @param \Cake\Event\EventManager|null $eventManager Event manager instance.
+     * @param array $viewOptions View options. See View::$_passedVars for list of
+     *   options which get set as class properties.
+     */
     public function __construct(
-        Request $request = null,
+        ServerRequest $request = null,
         Response $response = null,
         EventManager $eventManager = null,
         array $viewOptions = []
     ) {
         $this->_ext = '.tpl';
+
         $cfgSmarty = Configure::read('Smarty');
         if (!$cfgSmarty) {
-            throw new LogicException('The Smarty configure variable not present in app.php config file.');
+            throw new LogicException('The Smarty configure variable not present in "app.php" config file.');
         }
         $this->Smarty = new Smarty;
 
@@ -52,23 +66,30 @@ class SmartyView extends View
         $this->Smarty->debugging = Configure::read('debug');
         $this->Smarty->error_reporting = $cfgSmarty['error_reporting'];
         $this->Smarty->force_compile = $cfgSmarty['force_compile'];
-        $this->Smarty->setCaching($cfgSmarty['caching']);
-        $this->Smarty->setCacheLifetime($cfgSmarty['caching_time']);
-        $this->Smarty->setCompileCheck($cfgSmarty['compile_check']);
+        if (isset($cfgSmarty['caching'])) {
+            $this->Smarty->setCaching($cfgSmarty['caching']);
+        }
+        if (isset($cfgSmarty['caching_time'])) {
+            $this->Smarty->setCacheLifetime($cfgSmarty['caching_time']);
+        }
+        if (isset($cfgSmarty['compile_check'])) {
+            $this->Smarty->setCompileCheck($cfgSmarty['compile_check']);
+        }
         $this->Smarty->setCompileDir(CACHE . 'views');
         $this->Smarty->setCacheDir(CACHE . 'smarty');
         $this->Smarty->setConfigDir(CONFIG);
         $this->Smarty->setTemplateDir(APP . 'View');
-        
+
         parent::__construct($request, $response, $eventManager, $viewOptions);
     }
 
     /**
      * Initialization hook method.
      *
-     * Use this method to add common initialization code like loading helpers.
-     *
-     * e.g. `$this->loadHelper('Html');`
+     * Properties like $helpers etc. cannot be initialized statically in your custom
+     * view class as they are overwritten by values from controller in constructor.
+     * So this method allows you to manipulate them as required after view instance
+     * is constructed.
      *
      * @return void
      */
@@ -76,6 +97,7 @@ class SmartyView extends View
     {
         parent::initialize();
 
+        $this->loadHelper('Breadcrumbs');
         $this->loadHelper('Flash');
         $this->loadHelper('Form');
         $this->loadHelper('Html');
@@ -88,6 +110,19 @@ class SmartyView extends View
         $this->loadHelper('Url');
     }
 
+    /**
+     * Renders and returns output for given template filename with its
+     * array of data. Handles parent/extended templates.
+     *
+     * @param string $viewFile Filename of the view
+     * @param array $data Data to include in rendered view. If empty the current
+     *   View::$viewVars will be used.
+     * @return string Rendered output
+     * @throws \LogicException When a block is left open.
+     * @throws \Exception
+     * @triggers View.beforeRenderFile $this, [$viewFile]
+     * @triggers View.afterRenderFile $this, [$viewFile, $content]
+     */
     protected function _render($viewFile, $data = [])
     {
         $viewInfo = pathinfo($viewFile);
@@ -132,13 +167,13 @@ class SmartyView extends View
         }
 
         $remainingBlocks = count($this->Blocks->unclosed());
-
         if ($initialBlocks !== $remainingBlocks) {
             throw new LogicException(sprintf(
                 'The "%s" block was left open. Blocks are not allowed to cross files.',
                 $this->Blocks->active()
             ));
         }
+
         return $content;
     }
 }

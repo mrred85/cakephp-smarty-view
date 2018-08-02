@@ -1,5 +1,4 @@
-# CakePHP 3 Smarty View
-
+# CakePHP 3.6.x Smarty View
 
 ## Install Smarty
 ### Manual
@@ -27,7 +26,7 @@ class AppController extends Controller
     // Your code
     public function beforeRender(Event $event)
     {
-        $this->viewBuilder()->className('Smarty'); // SET SMARTY VIEW
+        $this->viewBuilder()->setClassName('Smarty'); // SET SMARTY VIEW
     }
     // Your code
 }

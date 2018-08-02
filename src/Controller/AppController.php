@@ -9,7 +9,7 @@ class AppController extends Controller
     // Your code
     public function beforeRender(Event $event)
     {
-        $this->viewBuilder()->className('Smarty'); // SET SMARTY VIEW
+        $this->viewBuilder()->setClassName('Smarty'); // SET SMARTY VIEW
     }
     // Your code
 }
