@@ -1,7 +1,8 @@
 <?php
 /**
- * @package SmartyView
- * @link https://github.com/mrred85
+ * Smarty View
+ *
+ * @link https://github.com/mrred85/cakephp-smarty-view
  * @copyright 2016 - present Victor Rosu. All rights reserved.
  * @license Licensed under the MIT License.
  */

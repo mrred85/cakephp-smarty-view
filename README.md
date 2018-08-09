@@ -1,6 +1,11 @@
-# CakePHP 3.6.x Smarty View
+# CakePHP Smarty View
+
+### Requirements
+- PHP >= 7.1.x
+- CakePHP >= 3.6.x
 
 ## Install Smarty
+
 ### Manual
 Download Smarty from [here](https://github.com/smarty-php/smarty/archive/master.zip)
 Extract it to `app/vendor/smarty`
@@ -14,7 +19,7 @@ composer require smarty/smarty
 Copy the `SmartyView.php` file from `src > View` folder to your **View** folder.
 
 ## Include in AppController.php
-Load SmartyView in your CakePhp project like in `AppConroller.php` file or below:
+Load `SmartyView` in your CakePHP project like in `AppController.php` file or below:
 ```php
 namespace App\Controller;
 
